@@ -19,6 +19,9 @@
 
 namespace Doctrine\Common\Collections\Expr;
 
+use Doctrine\Common\Collections\Operation\Add;
+use Doctrine\Common\Collections\Operation\Divide;
+use Doctrine\Common\Collections\Operation\Multiply;
 use Doctrine\Common\Collections\Operation\Operation;
 use Doctrine\Common\Collections\Operation\SetValue;
 
@@ -58,14 +61,44 @@ abstract class ExpressionVisitor
     abstract public function walkCompositeExpression(CompositeExpression $expr);
 
     /**
-     * Converts a composite expression into the target query language output.
+     * Converts a SetValue operation into the target query language output.
      *
      * @param string   $field
      * @param SetValue $operation
      *
-     * @return mixed
+     * @return \Closure
      */
     abstract public function walkSetValue($field, SetValue $operation);
+
+    /**
+     * Converts a Add operation into the target query language output.
+     *
+     * @param string $field
+     * @param Add    $operation
+     *
+     * @return \Closure
+     */
+    abstract public function walkAdd($field, Add $operation);
+
+    /**
+     * Converts a Multiply operation into the target query language output.
+     *
+     * @param string   $field
+     * @param Multiply $operation
+     *
+     * @return \Closure
+     */
+    abstract public function walkMultiply($field, Multiply $operation);
+
+    /**
+     * Converts a Divide operation into the target query language output.
+     *
+     * @param string $field
+     * @param Divide $operation
+     *
+     * @return \Closure
+     */
+    abstract public function walkDivide($field, Divide $operation);
 
     /**
      * Dispatches walking an expression to the appropriate handler.
@@ -108,6 +141,18 @@ abstract class ExpressionVisitor
         switch (true) {
             case ($operation instanceof SetValue):
                 return $this->walkSetValue($field, $operation);
+                break;
+
+            case ($operation instanceof Add):
+                return $this->walkAdd($field, $operation);
+                break;
+
+            case ($operation instanceof Multiply):
+                return $this->walkMultiply($field, $operation);
+                break;
+
+            case ($operation instanceof Divide):
+                return $this->walkDivide($field, $operation);
                 break;
 
             default:

@@ -19,6 +19,9 @@
 
 namespace Doctrine\Common\Collections\Expr;
 
+use Doctrine\Common\Collections\Operation\Add;
+use Doctrine\Common\Collections\Operation\Divide;
+use Doctrine\Common\Collections\Operation\Multiply;
 use Doctrine\Common\Collections\Operation\Operation;
 use Doctrine\Common\Collections\Operation\SetValue;
 
@@ -225,8 +228,41 @@ class ClosureExpressionVisitor extends ExpressionVisitor
      */
     public function walkSetValue($field, SetValue $operation)
     {
-        return function($object) use($field, $operation) {
+        return function ($object) use ($field, $operation) {
             self::setObjectFieldValue($object, $field, $operation->getValue());
+        };
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function walkAdd($field, Add $operation)
+    {
+        return function ($object) use ($field, $operation) {
+            $value = self::getObjectFieldValue($object, $field);
+            self::setObjectFieldValue($object, $field, $value + $operation->getValue());
+        };
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function walkMultiply($field, Multiply $operation)
+    {
+        return function ($object) use ($field, $operation) {
+            $value = self::getObjectFieldValue($object, $field);
+            self::setObjectFieldValue($object, $field, $value * $operation->getValue());
+        };
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function walkDivide($field, Divide $operation)
+    {
+        return function ($object) use ($field, $operation) {
+            $value = self::getObjectFieldValue($object, $field);
+            self::setObjectFieldValue($object, $field, $value / $operation->getValue());
         };
     }
 

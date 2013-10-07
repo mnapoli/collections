@@ -21,6 +21,9 @@ namespace Doctrine\Tests\Common\Collections;
 
 use Doctrine\Common\Collections\Expr\ClosureExpressionVisitor;
 use Doctrine\Common\Collections\ExpressionBuilder;
+use Doctrine\Common\Collections\Operation\Add;
+use Doctrine\Common\Collections\Operation\Divide;
+use Doctrine\Common\Collections\Operation\Multiply;
 use Doctrine\Common\Collections\Operation\SetValue;
 
 /**
@@ -238,6 +241,42 @@ class ClosureExpressionVisitorTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals("bar", $objects[0]->getFoo());
         $this->assertEquals("bar", $objects[1]->getFoo());
+    }
+
+    public function testWalkAdd()
+    {
+        /** @var TestObject[] $objects */
+        $objects = array(new TestObject(1), new TestObject(2));
+        $closure = $this->visitor->walkAdd('foo', new Add(2));
+
+        array_walk($objects, $closure);
+
+        $this->assertEquals(3, $objects[0]->getFoo());
+        $this->assertEquals(4, $objects[1]->getFoo());
+    }
+
+    public function testWalkMultiply()
+    {
+        /** @var TestObject[] $objects */
+        $objects = array(new TestObject(1), new TestObject(2));
+        $closure = $this->visitor->walkMultiply('foo', new Multiply(2));
+
+        array_walk($objects, $closure);
+
+        $this->assertEquals(2, $objects[0]->getFoo());
+        $this->assertEquals(4, $objects[1]->getFoo());
+    }
+
+    public function testWalkDivide()
+    {
+        /** @var TestObject[] $objects */
+        $objects = array(new TestObject(2), new TestObject(4));
+        $closure = $this->visitor->walkDivide('foo', new Divide(2));
+
+        array_walk($objects, $closure);
+
+        $this->assertEquals(1, $objects[0]->getFoo());
+        $this->assertEquals(2, $objects[1]->getFoo());
     }
 }
 
