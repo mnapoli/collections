@@ -19,6 +19,9 @@
 
 namespace Doctrine\Common\Collections\Expr;
 
+use Doctrine\Common\Collections\Operation\Operation;
+use Doctrine\Common\Collections\Operation\SetValue;
+
 /**
  * An Expression visitor walks a graph of expressions and turns them into a
  * query for the underlying implementation.
@@ -55,6 +58,16 @@ abstract class ExpressionVisitor
     abstract public function walkCompositeExpression(CompositeExpression $expr);
 
     /**
+     * Converts a composite expression into the target query language output.
+     *
+     * @param string   $field
+     * @param SetValue $operation
+     *
+     * @return mixed
+     */
+    abstract public function walkSetValue($field, SetValue $operation);
+
+    /**
      * Dispatches walking an expression to the appropriate handler.
      *
      * @param Expression $expr
@@ -77,6 +90,28 @@ abstract class ExpressionVisitor
 
             default:
                 throw new \RuntimeException("Unknown Expression " . get_class($expr));
+        }
+    }
+
+    /**
+     * Dispatches walking an expression to the appropriate handler.
+     *
+     * @param string    $field
+     * @param Operation $operation
+     *
+     * @return \Closure
+     *
+     * @throws \RuntimeException
+     */
+    public function apply($field, Operation $operation)
+    {
+        switch (true) {
+            case ($operation instanceof SetValue):
+                return $this->walkSetValue($field, $operation);
+                break;
+
+            default:
+                throw new \RuntimeException("Unknown operation " . get_class($operation));
         }
     }
 }

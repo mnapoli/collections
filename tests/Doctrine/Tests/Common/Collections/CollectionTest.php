@@ -2,6 +2,8 @@
 
 namespace Doctrine\Tests\Common\Collections;
 
+use Doctrine\Common\Collections\Operation\SetValue;
+use Doctrine\Common\Collections\Update;
 use Doctrine\Tests;
 use Doctrine\Common\Collections\Criteria;
 
@@ -260,5 +262,22 @@ class CollectionTest extends \Doctrine\Tests\DoctrineTestCase
     {
         $this->_coll->set('key', null);
         $this->assertTrue($this->_coll->containsKey('key'));
+    }
+
+    /**
+     * @group DDC-2727
+     */
+    public function testApply()
+    {
+        $this->fillMatchingFixture();
+
+        $update = new Update();
+        $update->set('foo', new SetValue('hello'));
+        $this->_coll->apply($update);
+
+        $this->assertCount(2, $this->_coll);
+        foreach ($this->_coll as $item) {
+            $this->assertEquals('hello', $item->foo);
+        }
     }
 }

@@ -30,7 +30,7 @@ use Doctrine\Common\Collections\Expr\ClosureExpressionVisitor;
  * @author Jonathan Wage <jonwage@gmail.com>
  * @author Roman Borschel <roman@code-factory.org>
  */
-class ArrayCollection implements Collection, Selectable
+class ArrayCollection implements Collection, Selectable, Updatable
 {
     /**
      * An array containing the entries of this collection.
@@ -381,5 +381,19 @@ class ArrayCollection implements Collection, Selectable
         }
 
         return new static($filtered);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function apply(Update $update)
+    {
+        $operations = $update->getOperations();
+
+        foreach ($operations as $field => $operation) {
+            $visitor = new ClosureExpressionVisitor();
+            $closure = $visitor->apply($field, $operation);
+            array_walk($this->_elements, $closure);
+        }
     }
 }

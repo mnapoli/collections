@@ -19,6 +19,9 @@
 
 namespace Doctrine\Common\Collections\Expr;
 
+use Doctrine\Common\Collections\Operation\Operation;
+use Doctrine\Common\Collections\Operation\SetValue;
+
 /**
  * Walks an expression graph and turns it into a PHP closure.
  *
@@ -66,6 +69,36 @@ class ClosureExpressionVisitor extends ExpressionVisitor
         }
 
         return $object->$field;
+    }
+    /**
+     * Sets the value of a field of a given object. This field has to be public
+     * directly or indirectly (through an accessor set* or a magic
+     * method, __set, __call).
+     *
+     * @param object $object
+     * @param string $field
+     * @param mixed  $value
+     */
+    public static function setObjectFieldValue($object, $field, $value)
+    {
+        $accessor = 'set' . $field;
+
+        if (method_exists($object, $accessor)) {
+            $object->$accessor($value);
+            return;
+        }
+
+        // __call should be triggered for set.
+        if (method_exists($object, '__call')) {
+            $object->$accessor($value);
+            return;
+        }
+
+        if ($object instanceof \ArrayAccess || is_array($object)) {
+            $object[$field] = $value;
+        }
+
+        $object->$field = $value;
     }
 
     /**
@@ -185,6 +218,16 @@ class ClosureExpressionVisitor extends ExpressionVisitor
             default:
                 throw new \RuntimeException("Unknown composite " . $expr->getType());
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function walkSetValue($field, SetValue $operation)
+    {
+        return function($object) use($field, $operation) {
+            self::setObjectFieldValue($object, $field, $operation->getValue());
+        };
     }
 
     /**

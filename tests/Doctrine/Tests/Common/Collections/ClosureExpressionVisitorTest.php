@@ -21,13 +21,21 @@ namespace Doctrine\Tests\Common\Collections;
 
 use Doctrine\Common\Collections\Expr\ClosureExpressionVisitor;
 use Doctrine\Common\Collections\ExpressionBuilder;
+use Doctrine\Common\Collections\Operation\SetValue;
 
 /**
  * @group DDC-1637
  */
 class ClosureExpressionVisitorTest extends \PHPUnit_Framework_TestCase
 {
+    /**
+     * @var ClosureExpressionVisitor
+     */
     private $visitor;
+
+    /**
+     * @var ExpressionBuilder
+     */
     private $builder;
 
     public function setUp()
@@ -48,6 +56,24 @@ class ClosureExpressionVisitorTest extends \PHPUnit_Framework_TestCase
         $object = new TestObject(1, 2, true, 3);
 
         $this->assertEquals(3, $this->visitor->getObjectFieldValue($object, 'qux'));
+    }
+
+    public function testSetObjectFieldValueAccessor()
+    {
+        $object = new TestObject(1);
+
+        $this->visitor->setObjectFieldValue($object, 'foo', 2);
+
+        $this->assertEquals(2, $object->getFoo());
+    }
+
+    public function testSetObjectFieldValueMagicCallMethod()
+    {
+        $object = new TestObject(1, 2, true, 3);
+
+        $this->visitor->setObjectFieldValue($object, 'qux', 4);
+
+        $this->assertEquals(4, $object->getqux());
     }
 
     public function testWalkEqualsComparison()
@@ -201,6 +227,18 @@ class ClosureExpressionVisitorTest extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue($closure(array('foo' => 42)));
     }
+
+    public function testWalkSetValue()
+    {
+        /** @var TestObject[] $objects */
+        $objects = array(new TestObject("a"), new TestObject("b"));
+        $closure = $this->visitor->walkSetValue('foo', new SetValue('bar'));
+
+        array_walk($objects, $closure);
+
+        $this->assertEquals("bar", $objects[0]->getFoo());
+        $this->assertEquals("bar", $objects[1]->getFoo());
+    }
 }
 
 class TestObject
@@ -223,11 +261,19 @@ class TestObject
         if ('getqux' === $name) {
             return $this->qux;
         }
+        if ('setqux' === $name) {
+            $this->qux = current($arguments);
+        }
     }
 
     public function getFoo()
     {
         return $this->foo;
+    }
+
+    public function setFoo($value)
+    {
+        $this->foo = $value;
     }
 
     public function getBar()
