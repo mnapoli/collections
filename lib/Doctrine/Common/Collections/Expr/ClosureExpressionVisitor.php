@@ -22,7 +22,6 @@ namespace Doctrine\Common\Collections\Expr;
 use Doctrine\Common\Collections\Operation\Add;
 use Doctrine\Common\Collections\Operation\Divide;
 use Doctrine\Common\Collections\Operation\Multiply;
-use Doctrine\Common\Collections\Operation\Operation;
 use Doctrine\Common\Collections\Operation\SetValue;
 
 /**
