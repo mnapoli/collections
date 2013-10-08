@@ -141,19 +141,15 @@ abstract class ExpressionVisitor
         switch (true) {
             case ($operation instanceof SetValue):
                 return $this->walkSetValue($field, $operation);
-                break;
 
             case ($operation instanceof Add):
                 return $this->walkAdd($field, $operation);
-                break;
 
             case ($operation instanceof Multiply):
                 return $this->walkMultiply($field, $operation);
-                break;
 
             case ($operation instanceof Divide):
                 return $this->walkDivide($field, $operation);
-                break;
 
             default:
                 throw new \RuntimeException("Unknown operation " . get_class($operation));
